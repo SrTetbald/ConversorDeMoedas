@@ -20,11 +20,6 @@ class ConverterMoedaDto {
 export class CotacaoController {
     constructor(private readonly cotacaoService: CotacaoService) {}
 
-    @Get('conver')
-    async mostrarCotacoes(): Promise<any[]> {
-        return this.cotacaoService.pegarCotacoes();
-    }
-
     @Get('converter')
     async converterMoeda(
         @Body() converterMoedaDto: ConverterMoedaDto,

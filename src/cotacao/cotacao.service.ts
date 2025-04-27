@@ -13,14 +13,9 @@ interface ICotacao {
     ParidadeVenda: string;
 }
 
-
 @Injectable()
 export class CotacaoService implements OnModuleInit {
-
     private cotacoes: ICotacao[] = [];
-    private readonly conteudoCsv =
-        `https://www4.bcb.gov.br/Download/fechamento/`
-        //20250425.csv;
 
     constructor(private readonly externoService: ExternoService) {}
 
@@ -28,14 +23,13 @@ export class CotacaoService implements OnModuleInit {
         await this.carregarCotacoes();
         this.adicionarMoedaPadrao();
         // console.log('Cotacoes carregadas:', this.cotacoes);
-        
     }
     async carregarCotacoes(loop = 0, maxLoop = 3) {
         const dataAtual = subDays(new Date(), loop);
         const dataFormatada = format(dataAtual, 'yyyyMMdd');
         const url = `https://www4.bcb.gov.br/Download/fechamento/${dataFormatada}.csv`;
 
-        try{
+        try {
             const dadosExternos = await this.externoService.pegarDadosExternos(url);
             this.cotacoes = dadosExternos.map((dado) => {
                 return {
@@ -50,16 +44,19 @@ export class CotacaoService implements OnModuleInit {
                 };
             });
             console.log(`Cotacoes carregadas na data: ${dataFormatada}`);
-        }catch (error: any){
-            console.log(`Erro ao carregar cotacoes na data: ${dataFormatada}`, /*error.message*/);
+        } catch (error: any) {
+            console.log(
+                `Erro ao carregar cotacoes na data: ${dataFormatada}`, error.message,
+            );
             if (loop < maxLoop) {
-                console.log(`Tentando novamente... (${loop + 1}/${maxLoop})` );
+                console.log(`Tentando novamente... (${loop + 1}/${maxLoop})`);
                 await this.carregarCotacoes(loop + 1, maxLoop);
             } else {
-                console.log('Máximo de tentativas atingido. Não foi possível carregar as cotações.');
+                console.log(
+                    'Máximo de tentativas atingido. Não foi possível carregar as cotações.',
+                );
             }
         }
-        //this.adicionarMoedaPadrao();
     }
 
     adicionarMoedaPadrao() {
@@ -75,35 +72,19 @@ export class CotacaoService implements OnModuleInit {
         };
         this.cotacoes.push(moedaPadrao);
     }
-
-    async pegarCotacoes(): Promise<ICotacao[]> {
-        return this.cotacoes;
-    }
-
-    async converterMoeda(
-        valor: number,
-        de: string,
-        para: string,
-    ): Promise<number> {
+    async converterMoeda(valor: number, de: string, para: string): Promise<number> {
         const cotacaoDe = this.cotacoes.find((cotacao) => cotacao.Moeda === de);
-        const cotacaoPara = this.cotacoes.find(
-            (cotacao) => cotacao.Moeda === para,
-        );
+        const cotacaoPara = this.cotacoes.find((cotacao) => cotacao.Moeda === para);
 
         if (!cotacaoDe || !cotacaoPara) {
             throw new Error('Moeda não encontrada.');
         }
-
         //const taxaCompraDe = parseFloat(cotacaoDe.TaxaCompra);
         //const taxaVendaPara = parseFloat(cotacaoPara.TaxaVenda);
         const taxaMédiaDe =
-            (parseFloat(cotacaoDe.TaxaVenda) +
-                parseFloat(cotacaoDe.TaxaCompra)) /
-            2;
+            (parseFloat(cotacaoDe.TaxaVenda) + parseFloat(cotacaoDe.TaxaCompra)) / 2;
         const taxaMédiaPara =
-            (parseFloat(cotacaoPara.TaxaVenda) +
-                parseFloat(cotacaoPara.TaxaCompra)) /
-            2;
+            (parseFloat(cotacaoPara.TaxaVenda) + parseFloat(cotacaoPara.TaxaCompra)) / 2;
         const cambio = taxaMédiaDe / taxaMédiaPara;
 
         return valor * cambio;
