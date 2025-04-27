@@ -4,7 +4,7 @@ import { CotacaoController } from './cotacao.controller';
 import { ExternoService } from 'src/externo/externo.service';
 
 @Module({
-  providers: [CotacaoService, ExternoService],
-  controllers: [CotacaoController]
+    providers: [CotacaoService, ExternoService],
+    controllers: [CotacaoController],
 })
 export class CotacaoModule {}
