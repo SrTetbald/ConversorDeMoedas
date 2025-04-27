@@ -30,7 +30,6 @@ export class CotacaoService implements OnModuleInit {
         // console.log('Cotacoes carregadas:', this.cotacoes);
         
     }
-
     async carregarCotacoes(loop = 0, maxLoop = 3) {
         const dataAtual = subDays(new Date(), loop);
         const dataFormatada = format(dataAtual, 'yyyyMMdd');
