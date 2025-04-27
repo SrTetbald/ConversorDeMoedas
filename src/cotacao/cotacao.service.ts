@@ -1,4 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { format, subDays } from 'date-fns';
 import { ExternoService } from 'src/externo/externo.service';
 
 interface ICotacao {
@@ -12,37 +13,54 @@ interface ICotacao {
     ParidadeVenda: string;
 }
 
+
 @Injectable()
 export class CotacaoService implements OnModuleInit {
+
     private cotacoes: ICotacao[] = [];
     private readonly conteudoCsv =
-        'https://www4.bcb.gov.br/Download/fechamento/20250425.csv';
+        `https://www4.bcb.gov.br/Download/fechamento/`
+        //20250425.csv;
 
     constructor(private readonly externoService: ExternoService) {}
 
     async onModuleInit() {
         await this.carregarCotacoes();
-        console.log('Cotacoes carregadas:', this.cotacoes);
+        this.adicionarMoedaPadrao();
+        // console.log('Cotacoes carregadas:', this.cotacoes);
+        
     }
 
-    async carregarCotacoes() {
-        const dadosExternos = await this.externoService.pegarDadosExternos(
-            this.conteudoCsv,
-        );
+    async carregarCotacoes(loop = 0, maxLoop = 3) {
+        const dataAtual = subDays(new Date(), loop);
+        const dataFormatada = format(dataAtual, 'yyyyMMdd');
+        const url = `https://www4.bcb.gov.br/Download/fechamento/${dataFormatada}.csv`;
 
-        this.cotacoes = dadosExternos.map((dado) => {
-            return {
-                Data: dado.Data,
-                CodMoeda: dado.CodMoeda,
-                Tipo: dado.Tipo,
-                Moeda: dado.Moeda,
-                TaxaCompra: dado.TaxaCompra.replace(',', '.'),
-                TaxaVenda: dado.TaxaVenda.replace(',', '.'),
-                ParidadeCompra: dado.ParidadeCompra.replace(',', '.'),
-                ParidadeVenda: dado.ParidadeVenda.replace(',', '.'),
-            };
-        });
-        this.adicionarMoedaPadrao();
+        try{
+            const dadosExternos = await this.externoService.pegarDadosExternos(url);
+            this.cotacoes = dadosExternos.map((dado) => {
+                return {
+                    Data: dado.Data,
+                    CodMoeda: dado.CodMoeda,
+                    Tipo: dado.Tipo,
+                    Moeda: dado.Moeda,
+                    TaxaCompra: dado.TaxaCompra.replace(',', '.'),
+                    TaxaVenda: dado.TaxaVenda.replace(',', '.'),
+                    ParidadeCompra: dado.ParidadeCompra.replace(',', '.'),
+                    ParidadeVenda: dado.ParidadeVenda.replace(',', '.'),
+                };
+            });
+            console.log(`Cotacoes carregadas na data: ${dataFormatada}`);
+        }catch (error: any){
+            console.log(`Erro ao carregar cotacoes na data: ${dataFormatada}`, /*error.message*/);
+            if (loop < maxLoop) {
+                console.log(`Tentando novamente... (${loop + 1}/${maxLoop})` );
+                await this.carregarCotacoes(loop + 1, maxLoop);
+            } else {
+                console.log('Máximo de tentativas atingido. Não foi possível carregar as cotações.');
+            }
+        }
+        //this.adicionarMoedaPadrao();
     }
 
     adicionarMoedaPadrao() {
