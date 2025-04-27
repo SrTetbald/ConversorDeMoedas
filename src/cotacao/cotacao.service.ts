@@ -24,14 +24,14 @@ export class CotacaoService implements OnModuleInit {
         this.adicionarMoedaPadrao();
         // console.log('Cotacoes carregadas:', this.cotacoes);
     }
-    async carregarCotacoes(loop = 0, maxLoop = 3) {
+    async carregarCotacoes(loop = 0, maxLoop = 4) {
         const dataAtual = subDays(new Date(), loop);
         const dataFormatada = format(dataAtual, 'yyyyMMdd');
         const url = `https://www4.bcb.gov.br/Download/fechamento/${dataFormatada}.csv`;
 
         try {
             const dadosExternos = await this.externoService.pegarDadosExternos(url);
-            this.cotacoes = dadosExternos.map((dado) => {
+            this.cotacoes = dadosExternos.map(dado => {
                 return {
                     Data: dado.Data,
                     CodMoeda: dado.CodMoeda,
@@ -45,9 +45,7 @@ export class CotacaoService implements OnModuleInit {
             });
             console.log(`Cotacoes carregadas na data: ${dataFormatada}`);
         } catch (error: any) {
-            console.log(
-                `Erro ao carregar cotacoes na data: ${dataFormatada}`, error.message,
-            );
+            console.log(`Erro ao carregar cotacoes na data: ${dataFormatada}`, error.message);
             if (loop < maxLoop) {
                 console.log(`Tentando novamente... (${loop + 1}/${maxLoop})`);
                 await this.carregarCotacoes(loop + 1, maxLoop);
@@ -72,9 +70,10 @@ export class CotacaoService implements OnModuleInit {
         };
         this.cotacoes.push(moedaPadrao);
     }
-    async converterMoeda(valor: number, de: string, para: string): Promise<number> {
-        const cotacaoDe = this.cotacoes.find((cotacao) => cotacao.Moeda === de);
-        const cotacaoPara = this.cotacoes.find((cotacao) => cotacao.Moeda === para);
+    async converterMoeda(valor: string, de: string, para: string): Promise<number> {
+        const valorFloat = parseFloat(valor);
+        const cotacaoDe = this.cotacoes.find(cotacao => cotacao.Moeda === de);
+        const cotacaoPara = this.cotacoes.find(cotacao => cotacao.Moeda === para);
 
         if (!cotacaoDe || !cotacaoPara) {
             throw new Error('Moeda não encontrada.');
@@ -87,6 +86,6 @@ export class CotacaoService implements OnModuleInit {
             (parseFloat(cotacaoPara.TaxaVenda) + parseFloat(cotacaoPara.TaxaCompra)) / 2;
         const cambio = taxaMédiaDe / taxaMédiaPara;
 
-        return valor * cambio;
+        return valorFloat * cambio;
     }
 }

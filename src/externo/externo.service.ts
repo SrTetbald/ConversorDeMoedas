@@ -23,7 +23,7 @@ export class ExternoService {
             return new Promise((resolve, reject) => {
                 (response.data as Readable)
                     .pipe(csv({ separator: ';', headers: false }))
-                    .on('data', (row) => {
+                    .on('data', row => {
                         const formattedRow: any = {};
                         for (let i = 0; i < headers.length; i++) {
                             formattedRow[headers[i]] = row[i];
@@ -31,7 +31,7 @@ export class ExternoService {
                         results.push(formattedRow);
                     })
                     .on('end', () => resolve(results))
-                    .on('error', (error) => {
+                    .on('error', error => {
                         console.error('Erro ao analisar CSV:', error);
                         reject(new Error('Falha ao analisar CSV.'));
                     });
