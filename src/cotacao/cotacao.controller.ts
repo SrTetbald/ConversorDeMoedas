@@ -1,20 +1,5 @@
-import { Body, Controller, Get, ParseFloatPipe, Query } from '@nestjs/common';
+import { Controller, Get, ParseFloatPipe, Query } from '@nestjs/common';
 import { CotacaoService } from './cotacao.service';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
-
-class ConverterMoedaDto {
-    @IsNotEmpty()
-    @IsString()
-    de: string;
-
-    @IsNotEmpty()
-    @IsString()
-    para: string;
-
-    @IsNotEmpty()
-    @IsNumber()
-    valor: number;
-}
 
 @Controller('cotacao')
 export class CotacaoController {
@@ -30,5 +15,14 @@ export class CotacaoController {
             throw new Error('Os parâmetros "de" e "para" são obrigatórios.');
         }
         return this.cotacaoService.converterMoeda(valor, de, para);
+    }
+
+    @Get('moedas')
+    async getMoedas(): Promise<any[]> {
+        return this.cotacaoService.getMoedas();
+    }
+    @Get('cotacoes')
+    async getCotacoes(): Promise<any[]> {
+        return this.cotacaoService.getCotacoes();
     }
 }

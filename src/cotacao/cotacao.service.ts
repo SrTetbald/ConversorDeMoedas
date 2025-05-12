@@ -13,9 +13,14 @@ interface ICotacao {
     ParidadeVenda: string;
 }
 
+interface Imoedas {
+    Moeda: string;
+}
+
 @Injectable()
 export class CotacaoService implements OnModuleInit {
     private cotacoes: ICotacao[] = [];
+    private arrayCodMoedas: Imoedas[] = [];
 
     constructor(private readonly externoService: ExternoService) {}
 
@@ -43,6 +48,11 @@ export class CotacaoService implements OnModuleInit {
                     ParidadeVenda: dado.ParidadeVenda.replace(',', '.'),
                 };
             });
+            this.arrayCodMoedas = dadosExternos.map(dado => {
+                return {
+                    Moeda: dado.Moeda,
+                };
+            });
             console.log(`Cotacoes carregadas na data: ${dataFormatada}`);
         } catch (error: any) {
             console.log(`Erro ao carregar cotacoes na data: ${dataFormatada}`, error.message);
@@ -56,8 +66,10 @@ export class CotacaoService implements OnModuleInit {
             }
         }
     }
-
     adicionarMoedaPadrao() {
+        const moedaCodPadrao: Imoedas = {
+            Moeda: 'BRL',
+        };
         const moedaPadrao: ICotacao = {
             Data: '2025-04-26',
             CodMoeda: 'BRL',
@@ -69,6 +81,7 @@ export class CotacaoService implements OnModuleInit {
             ParidadeVenda: '1.00',
         };
         this.cotacoes.push(moedaPadrao);
+        this.arrayCodMoedas.push(moedaCodPadrao);
     }
     async converterMoeda(valor: string, de: string, para: string): Promise<number> {
         const valorFloat = parseFloat(valor);
@@ -78,8 +91,6 @@ export class CotacaoService implements OnModuleInit {
         if (!cotacaoDe || !cotacaoPara) {
             throw new Error('Moeda não encontrada.');
         }
-        //const taxaCompraDe = parseFloat(cotacaoDe.TaxaCompra);
-        //const taxaVendaPara = parseFloat(cotacaoPara.TaxaVenda);
         const taxaMédiaDe =
             (parseFloat(cotacaoDe.TaxaVenda) + parseFloat(cotacaoDe.TaxaCompra)) / 2;
         const taxaMédiaPara =
@@ -87,5 +98,13 @@ export class CotacaoService implements OnModuleInit {
         const cambio = taxaMédiaDe / taxaMédiaPara;
 
         return valorFloat * cambio;
+    }
+
+    async getMoedas(): Promise<Imoedas[]> {
+        return this.arrayCodMoedas;
+    }
+
+    async getCotacoes(): Promise<ICotacao[]> {
+        return this.cotacoes;
     }
 }
