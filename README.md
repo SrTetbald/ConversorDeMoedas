@@ -34,6 +34,7 @@ Abaixo está a estrutura principal do projeto e uma breve descrição de cada pa
     - `adicionarMoedaPadrao()`: Adiciona uma moeda padrão o Real (BRL) ao array cotacoes com taxas de câmbio fixas.
     - `converterMoeda(valor: number, de: string, para: string)`:Converte um determinado valor de uma moeda para outra usando as taxas de câmbio carregadas, lançando um erro se as moedas não forem encontradas.
     - `onModuleInit()`: Inicializa o serviço carregando as taxas de câmbio de uma fonte externa usando `carregarCotacoes()` e adicionando uma moeda padrão (BRL) usando `adicionarMoedaPadrao`
+    - `getMoedas()`: Faz uma requisição que entrega um array com os códigos de moedas para facilitar a requisição de conversão de moedas.
 
 ### `ExternoService`
 
