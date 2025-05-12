@@ -2,6 +2,9 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { format, subDays } from 'date-fns';
 import { ExternoService } from 'src/externo/externo.service';
 
+
+
+
 interface ICotacao {
     Data: string;
     CodMoeda: string;
@@ -25,6 +28,7 @@ export class CotacaoService implements OnModuleInit {
     constructor(private readonly externoService: ExternoService) {}
 
     async onModuleInit() {
+        const urlBase = process.env.BASE_URL;
         await this.carregarCotacoes();
         this.adicionarMoedaPadrao();
         // console.log('Cotacoes carregadas:', this.cotacoes);
@@ -33,6 +37,7 @@ export class CotacaoService implements OnModuleInit {
         const dataAtual = subDays(new Date(), loop);
         const dataFormatada = format(dataAtual, 'yyyyMMdd');
         const url = `https://www4.bcb.gov.br/Download/fechamento/${dataFormatada}.csv`;
+        //const url = `${process.env.BASE_URL}${dataFormatada}.csv`;
 
         try {
             const dadosExternos = await this.externoService.pegarDadosExternos(url);
@@ -63,6 +68,7 @@ export class CotacaoService implements OnModuleInit {
                 console.log(
                     'Máximo de tentativas atingido. Não foi possível carregar as cotações.',
                 );
+                console.log('BASE_URL:', process.env.BASE_URL);
             }
         }
     }

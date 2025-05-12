@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ExternoModule } from './externo/externo.module';
 import { CotacaoModule } from './cotacao/cotacao.module';
 
+
 @Module({
     imports: [ExternoModule, CotacaoModule],
     controllers: [AppController],
