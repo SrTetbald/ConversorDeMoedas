@@ -5,7 +5,7 @@ import { Readable } from 'stream';
 
 @Injectable()
 export class ExternoService {
-    async pegarDadosExternos(url: string): Promise<any[]> {
+    async consultarDadosExternos(url: string): Promise<any[]> {
         try {
             const response = await axios.get(url, { responseType: 'stream' });
             const results: any[] = [];

@@ -40,6 +40,6 @@ Abaixo está a estrutura principal do projeto e uma breve descrição de cada pa
 
 - **Descrição:** Serviço para buscar dados externos de um endpoint.
 - **Principais métodos:** 
-    - `pegarDadosExternos(url: string)`: Faz uma requisição HTTP para buscar e processar dados CSV.
+    - `consultarDadosExternos(url: string)`: Faz uma requisição HTTP para buscar e processar dados CSV.
 
 ## FIM

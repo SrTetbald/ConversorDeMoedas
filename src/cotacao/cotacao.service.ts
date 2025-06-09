@@ -1,9 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { format, subDays } from 'date-fns';
 import { ExternoService } from 'src/externo/externo.service';
-
-
-
+import { NOMES_MOEDAS } from 'src/externo/nome.moedas';
 
 interface ICotacao {
     Data: string;
@@ -18,6 +16,7 @@ interface ICotacao {
 
 interface Imoedas {
     Moeda: string;
+    Nome: string;
 }
 
 @Injectable()
@@ -40,7 +39,7 @@ export class CotacaoService implements OnModuleInit {
         //const url = `${process.env.BASE_URL}${dataFormatada}.csv`;
 
         try {
-            const dadosExternos = await this.externoService.pegarDadosExternos(url);
+            const dadosExternos = await this.externoService.consultarDadosExternos(url);
             this.cotacoes = dadosExternos.map(dado => {
                 return {
                     Data: dado.Data,
@@ -56,6 +55,7 @@ export class CotacaoService implements OnModuleInit {
             this.arrayCodMoedas = dadosExternos.map(dado => {
                 return {
                     Moeda: dado.Moeda,
+                    Nome: NOMES_MOEDAS[dado.Moeda],
                 };
             });
             console.log(`Cotacoes carregadas na data: ${dataFormatada}`);
@@ -75,6 +75,7 @@ export class CotacaoService implements OnModuleInit {
     adicionarMoedaPadrao() {
         const moedaCodPadrao: Imoedas = {
             Moeda: 'BRL',
+            Nome: NOMES_MOEDAS['BRL'],
         };
         const moedaPadrao: ICotacao = {
             Data: '2025-04-26',
