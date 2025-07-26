@@ -1,4 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { format, subDays } from 'date-fns';
 import { ExternoService } from 'src/externo/externo.service';
 import { NOMES_MOEDAS } from 'src/externo/nome.moedas';
@@ -113,5 +114,12 @@ export class CotacaoService implements OnModuleInit {
 
     async getCotacoes(): Promise<ICotacao[]> {
         return this.cotacoes;
+    }
+
+    @Cron('0 8 * * *')
+    async atualizarCotacoesDiarias() {
+        console.log('Iniciando atualização diária de cotações...');
+        await this.carregarCotacoes();
+        console.log('Cotações atualizadas com sucesso');
     }
 }
