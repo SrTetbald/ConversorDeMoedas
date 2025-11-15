@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import * as csv from 'csv-parser';
+import csv from 'csv-parser';
 import { Readable } from 'stream';
 
 @Injectable()
