@@ -66,18 +66,19 @@ export class CotacaoService implements OnModuleInit {
                 };
             });
 
-            const moedaExiste = (moeda: string) =>
-                this.arrayCodMoedas.some(m => m.Moeda === moeda);
+            
             const moedaBRL = this.arrayCodMoedas.find(m => m.Moeda === 'BRL');
+            const cotacaoBRL = this.cotacoes.find(c => c.Moeda === 'BRL');
 
+           
             this.cotacoes = novasCotacoes;
             this.arrayCodMoedas = novasMoedas;
 
-            if (moedaBRL && !moedaExiste('BRL')) {
-                const cotacaoBRL = this.cotacoes.find(c => c.Moeda === 'BRL');
-                if (cotacaoBRL) {
-                    this.arrayCodMoedas.push(moedaBRL);
-                }
+            if (moedaBRL && !this.arrayCodMoedas.some(m => m.Moeda === 'BRL')) {
+                this.arrayCodMoedas.push(moedaBRL);
+            }
+            if (cotacaoBRL && !this.cotacoes.some(c => c.Moeda === 'BRL')) {
+                this.cotacoes.push(cotacaoBRL);
             }
 
             console.log(`✓ Cotacoes carregadas com sucesso na data: ${dataFormatada}`);
@@ -117,21 +118,24 @@ export class CotacaoService implements OnModuleInit {
         this.cotacoes.push(moedaPadrao);
         this.arrayCodMoedas.push(moedaCodPadrao);
     }
-    async converterMoeda(valor: string, de: string, para: string): Promise<number> {
-        const valorFloat = parseFloat(valor);
+    async converterMoeda(valor: number, de: string, para: string): Promise<number> {
         const cotacaoDe = this.cotacoes.find(cotacao => cotacao.Moeda === de);
         const cotacaoPara = this.cotacoes.find(cotacao => cotacao.Moeda === para);
 
-        if (!cotacaoDe || !cotacaoPara) {
-            throw new Error('Moeda não encontrada.');
+        if (!cotacaoDe) {
+            throw new Error(`Moeda de origem "${de}" não encontrada.`);
         }
+        if (!cotacaoPara) {
+            throw new Error(`Moeda de destino "${para}" não encontrada.`);
+        }
+
         const taxaMédiaDe =
             (parseFloat(cotacaoDe.TaxaVenda) + parseFloat(cotacaoDe.TaxaCompra)) / 2;
         const taxaMédiaPara =
             (parseFloat(cotacaoPara.TaxaVenda) + parseFloat(cotacaoPara.TaxaCompra)) / 2;
         const cambio = taxaMédiaDe / taxaMédiaPara;
 
-        return valorFloat * cambio;
+        return valor * cambio;
     }
 
     async getMoedas(): Promise<Imoedas[]> {

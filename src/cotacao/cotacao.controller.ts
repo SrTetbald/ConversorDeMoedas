@@ -1,4 +1,11 @@
-import { Controller, Get, ParseFloatPipe, Query } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    ParseFloatPipe,
+    Query,
+    HttpException,
+    HttpStatus,
+} from '@nestjs/common';
 import { CotacaoService } from './cotacao.service';
 
 @Controller('cotacao')
@@ -9,12 +16,22 @@ export class CotacaoController {
     async converterMoeda(
         @Query('de') de: string,
         @Query('para') para: string,
-        @Query('valor', ParseFloatPipe) valor: string,
+        @Query('valor', ParseFloatPipe) valor: number,
     ): Promise<number> {
         if (!de || !para) {
-            throw new Error('Os parâmetros "de" e "para" são obrigatórios.');
+            throw new HttpException(
+                'Os parâmetros "de" e "para" são obrigatórios.',
+                HttpStatus.BAD_REQUEST,
+            );
         }
-        return this.cotacaoService.converterMoeda(valor, de, para);
+        try {
+            return await this.cotacaoService.converterMoeda(valor, de, para);
+        } catch (error: any) {
+            throw new HttpException(
+                error.message || 'Erro ao converter moeda',
+                HttpStatus.NOT_FOUND,
+            );
+        }
     }
 
     @Get('moedas')

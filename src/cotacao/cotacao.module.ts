@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { CotacaoService } from './cotacao.service';
 import { CotacaoController } from './cotacao.controller';
-import { ExternoService } from 'src/externo/externo.service';
+import { ExternoModule } from 'src/externo/externo.module';
 
 @Module({
-    providers: [CotacaoService, ExternoService],
+    imports: [ExternoModule],
+    providers: [CotacaoService],
     controllers: [CotacaoController],
 })
 export class CotacaoModule {}
