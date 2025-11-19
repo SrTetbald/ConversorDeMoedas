@@ -28,10 +28,10 @@ export class CotacaoService implements OnModuleInit {
     constructor(private readonly externoService: ExternoService) {}
 
     async onModuleInit() {
-        const urlBase = process.env.BASE_URL;
-        await this.carregarCotacoes();
+        console.log('Iniciando CotacaoService...');
         this.adicionarMoedaPadrao();
-        // console.log('Cotacoes carregadas:', this.cotacoes);
+        await this.carregarCotacoes();
+        console.log(`Total de moedas carregadas: ${this.arrayCodMoedas.length}`);
     }
     async carregarCotacoes(loop = 0, maxLoop = 4) {
         const dataAtual = subDays(new Date(), loop);
@@ -41,7 +41,12 @@ export class CotacaoService implements OnModuleInit {
 
         try {
             const dadosExternos = await this.externoService.consultarDadosExternos(url);
-            this.cotacoes = dadosExternos.map(dado => {
+
+            if (!dadosExternos || dadosExternos.length === 0) {
+                throw new Error('Dados vazios recebidos da API');
+            }
+
+            const novasCotacoes = dadosExternos.map(dado => {
                 return {
                     Data: dado.Data,
                     CodMoeda: dado.CodMoeda,
@@ -53,23 +58,44 @@ export class CotacaoService implements OnModuleInit {
                     ParidadeVenda: dado.ParidadeVenda.replace(',', '.'),
                 };
             });
-            this.arrayCodMoedas = dadosExternos.map(dado => {
+
+            const novasMoedas = dadosExternos.map(dado => {
                 return {
                     Moeda: dado.Moeda,
                     Nome: NOMES_MOEDAS[dado.Moeda],
                 };
             });
-            console.log(`Cotacoes carregadas na data: ${dataFormatada}`);
+
+            const moedaExiste = (moeda: string) =>
+                this.arrayCodMoedas.some(m => m.Moeda === moeda);
+            const moedaBRL = this.arrayCodMoedas.find(m => m.Moeda === 'BRL');
+
+            this.cotacoes = novasCotacoes;
+            this.arrayCodMoedas = novasMoedas;
+
+            if (moedaBRL && !moedaExiste('BRL')) {
+                const cotacaoBRL = this.cotacoes.find(c => c.Moeda === 'BRL');
+                if (cotacaoBRL) {
+                    this.arrayCodMoedas.push(moedaBRL);
+                }
+            }
+
+            console.log(`✓ Cotacoes carregadas com sucesso na data: ${dataFormatada}`);
         } catch (error: any) {
-            console.log(`Erro ao carregar cotacoes na data: ${dataFormatada}`, error.message);
+            console.log(
+                `✗ Erro ao carregar cotacoes na data: ${dataFormatada}`,
+                error.message,
+            );
             if (loop < maxLoop) {
-                console.log(`Tentando novamente... (${loop + 1}/${maxLoop})`);
+                console.log(`→ Tentando novamente... (${loop + 1}/${maxLoop})`);
                 await this.carregarCotacoes(loop + 1, maxLoop);
             } else {
-                console.log(
-                    'Máximo de tentativas atingido. Não foi possível carregar as cotações.',
-                );
-                console.log('BASE_URL:', process.env.BASE_URL);
+                console.log('⚠ Máximo de tentativas atingido. Usando cotações em cache.');
+                if (this.cotacoes.length === 0) {
+                    console.log(
+                        '⚠ ATENÇÃO: Sem cotações em cache! API pode estar indisponível.',
+                    );
+                }
             }
         }
     }
